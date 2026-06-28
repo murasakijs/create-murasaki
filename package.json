@@ -1,0 +1,33 @@
+{
+  "name": "create-murasaki",
+  "version": "0.0.0",
+  "description": "Scaffolder for Murasaki apps. Run with `npm create murasaki@latest`.",
+  "keywords": [
+    "murasaki",
+    "create",
+    "scaffold",
+    "starter",
+    "desktop",
+    "nextjs"
+  ],
+  "homepage": "https://github.com/murasakijs/create-murasaki",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/murasakijs/create-murasaki.git"
+  },
+  "bugs": {
+    "url": "https://github.com/murasakijs/create-murasaki/issues"
+  },
+  "license": "MIT",
+  "author": "ichi",
+  "type": "module",
+  "bin": {
+    "create-murasaki": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ]
+}
