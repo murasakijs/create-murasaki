@@ -6,8 +6,8 @@ import { cp, mkdir, readFile, writeFile, stat } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createInterface } from 'node:readline/promises'
 import { spawnSync } from 'node:child_process'
+import { text, select, isCancel, cancel, intro, outro } from '@clack/prompts'
 
 // ── ANSI truecolor (Oomurasaki palette) ────────────────────────────────
 const BRIGHT = '\x1b[38;2;168;85;247m'
@@ -132,21 +132,39 @@ function runInstall(targetDir, pm) {
   return result.status === 0
 }
 
+function exitIfCancel(value) {
+  if (isCancel(value)) {
+    cancel('Cancelled.')
+    process.exit(0)
+  }
+  return value
+}
+
 async function promptForName() {
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
-  const answer = await rl.question(`  ${c(DEEP)}?${c(RESET)} ${c(BOLD)}Project name${c(RESET)} ${c(DIM)}(my-app):${c(RESET)} `)
-  rl.close()
-  return answer.trim() || 'my-app'
+  const value = await text({
+    message: 'Project name',
+    placeholder: 'my-app',
+    defaultValue: 'my-app',
+    validate(v) {
+      const t = (v || '').trim()
+      if (!t) return  // empty → use defaultValue
+      if (!isValidPackageName(t)) return 'Use lowercase letters, digits, dot, hyphen, underscore. Start with a letter or digit.'
+    },
+  })
+  return exitIfCancel(value)
 }
 
 async function promptForLinter() {
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
-  const answer = await rl.question(`  ${c(DEEP)}?${c(RESET)} ${c(BOLD)}Linter${c(RESET)} ${c(DIM)}(biome / eslint / none) [biome]:${c(RESET)} `)
-  rl.close()
-  const v = answer.trim().toLowerCase()
-  if (v === 'eslint' || v === 'e') return 'eslint'
-  if (v === 'none'   || v === 'n') return 'none'
-  return 'biome'  // default
+  const value = await select({
+    message: 'Which linter would you like to use?',
+    options: [
+      { value: 'biome',  label: 'Biome',  hint: 'fast, single tool, recommended' },
+      { value: 'eslint', label: 'ESLint', hint: 'classic, huge ecosystem' },
+      { value: 'none',   label: 'None',   hint: 'add your own later' },
+    ],
+    initialValue: 'biome',
+  })
+  return exitIfCancel(value)
 }
 
 // ── Linter installers ─────────────────────────────────────────────────
@@ -311,7 +329,7 @@ async function scaffold(projectName, linter) {
 // ── Main ──────────────────────────────────────────────────────────────
 const banner = renderBanner()
 process.stdout.write('\n' + banner + '\n\n')
-process.stdout.write(`  ${c(DIM)}desktop apps for Next.js developers${c(RESET)}\n`)
+process.stdout.write(`  ${c(DIM)}desktop apps for Next.js developers${c(RESET)}\n\n`)
 
 // ── Parse args ────────────────────────────────────────────────────────
 const argName = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : null
@@ -324,8 +342,10 @@ const argLinter = (() => {
   return null
 })()
 
-const projectName = argName || (await promptForName())
+intro('🦋 create-murasaki')
+const projectName = argName   || (await promptForName())
 const linter      = argLinter || (await promptForLinter())
+outro('Setting things up...')
 
 try {
   await scaffold(projectName, linter)

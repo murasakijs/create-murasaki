@@ -1,6 +1,6 @@
 {
   "name": "create-murasaki",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Scaffolder for Murasaki apps. Run with `npm create murasaki@latest`.",
   "keywords": [
     "murasaki",
@@ -29,5 +29,8 @@
     "templates",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "dependencies": {
+    "@clack/prompts": "^1.6.0"
+  }
 }
