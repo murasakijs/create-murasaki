@@ -139,8 +139,111 @@ async function promptForName() {
   return answer.trim() || 'my-app'
 }
 
+async function promptForLinter() {
+  const rl = createInterface({ input: process.stdin, output: process.stdout })
+  const answer = await rl.question(`  ${c(DEEP)}?${c(RESET)} ${c(BOLD)}Linter${c(RESET)} ${c(DIM)}(biome / eslint / none) [biome]:${c(RESET)} `)
+  rl.close()
+  const v = answer.trim().toLowerCase()
+  if (v === 'eslint' || v === 'e') return 'eslint'
+  if (v === 'none'   || v === 'n') return 'none'
+  return 'biome'  // default
+}
+
+// ── Linter installers ─────────────────────────────────────────────────
+async function applyBiome(targetDir) {
+  const biomeJson = `{
+  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["src/**/*.{ts,tsx,js,jsx}", "!**/node_modules", "!**/dist"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": { "recommended": true }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all"
+    }
+  }
+}
+`
+  await writeFile(join(targetDir, 'biome.json'), biomeJson)
+  await patchPackageJson(targetDir, (pkg) => {
+    pkg.devDependencies = { ...(pkg.devDependencies || {}), '@biomejs/biome': '^2.5.1' }
+    pkg.scripts = {
+      ...(pkg.scripts || {}),
+      check:  'biome check',
+      format: 'biome format --write',
+      lint:   'biome lint',
+      fix:    'biome check --write',
+    }
+  })
+}
+
+async function applyEslint(targetDir) {
+  const eslintConfig = `// eslint.config.js — flat config (ESLint v9+)
+
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['src/**/*.{ts,tsx,js,jsx}'],
+    plugins: { react: reactPlugin, 'react-hooks': reactHooks },
+    rules: {
+      ...reactPlugin.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+    },
+    settings: { react: { version: 'detect' } },
+  },
+  { ignores: ['node_modules/**', 'dist/**'] },
+)
+`
+  await writeFile(join(targetDir, 'eslint.config.js'), eslintConfig)
+  await patchPackageJson(targetDir, (pkg) => {
+    pkg.devDependencies = {
+      ...(pkg.devDependencies || {}),
+      'eslint':                     '^9.20.0',
+      '@eslint/js':                 '^9.20.0',
+      'typescript-eslint':          '^8.20.0',
+      'eslint-plugin-react':        '^7.37.0',
+      'eslint-plugin-react-hooks':  '^5.1.0',
+    }
+    pkg.scripts = {
+      ...(pkg.scripts || {}),
+      lint:       'eslint .',
+      'lint:fix': 'eslint . --fix',
+    }
+  })
+}
+
+async function patchPackageJson(targetDir, mutator) {
+  const pkgPath = join(targetDir, 'package.json')
+  const pkg = JSON.parse(await readFile(pkgPath, 'utf8'))
+  mutator(pkg)
+  await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
+}
+
 // ── Scaffold ───────────────────────────────────────────────────────────
-async function scaffold(projectName) {
+async function scaffold(projectName, linter) {
   const __dirname = dirname(fileURLToPath(import.meta.url))
   const templateDir = join(__dirname, 'templates', 'default')
   const targetDir = resolve(process.cwd(), projectName)
@@ -166,6 +269,15 @@ async function scaffold(projectName) {
   const pkgRaw = await readFile(pkgPath, 'utf8')
   const pkgPatched = pkgRaw.replace(/"__PROJECT_NAME__"/, JSON.stringify(projectName))
   await writeFile(pkgPath, pkgPatched)
+
+  // Apply linter overlay
+  if (linter === 'biome') {
+    log(`  ${c(DIM)}○${c(RESET)} Adding ${c(BOLD)}Biome${c(RESET)}...`)
+    await applyBiome(targetDir)
+  } else if (linter === 'eslint') {
+    log(`  ${c(DIM)}○${c(RESET)} Adding ${c(BOLD)}ESLint${c(RESET)}...`)
+    await applyEslint(targetDir)
+  }
 
   log(`  ${c(GREEN)}${c(BOLD)}✓${c(RESET)} Created ${c(BOLD)}${projectName}/${c(RESET)}`)
 
@@ -201,11 +313,22 @@ const banner = renderBanner()
 process.stdout.write('\n' + banner + '\n\n')
 process.stdout.write(`  ${c(DIM)}desktop apps for Next.js developers${c(RESET)}\n`)
 
-const argName = process.argv[2]
+// ── Parse args ────────────────────────────────────────────────────────
+const argName = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : null
+const argLinter = (() => {
+  const i = process.argv.indexOf('--linter')
+  if (i >= 0 && process.argv[i + 1]) {
+    const v = process.argv[i + 1].toLowerCase()
+    if (v === 'biome' || v === 'eslint' || v === 'none') return v
+  }
+  return null
+})()
+
 const projectName = argName || (await promptForName())
+const linter      = argLinter || (await promptForLinter())
 
 try {
-  await scaffold(projectName)
+  await scaffold(projectName, linter)
 } catch (err) {
   log(`\n  ${c(RED)}✗${c(RESET)} Scaffold failed: ${err.message}\n`)
   process.exit(1)
