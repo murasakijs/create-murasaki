@@ -1,13 +1,22 @@
 // src/app/page.tsx — the "/" route.
 //
-// useState comes from murasaki/jsx/dom and runs inside the WebView
-// after the client bundle hydrates the SSR shell.
+// Demonstrates client-side hooks (useState) and the native bridge
+// (useNotification / useClipboard / useShell) from murasaki/jsx/dom.
 
 import { Link } from 'murasaki'
-import { useState } from 'murasaki/jsx/dom'
+import {
+  useClipboard,
+  useNotification,
+  useShell,
+  useState,
+} from 'murasaki/jsx/dom'
 
 export default function HomePage() {
   const [count, setCount] = useState(0)
+  const notify = useNotification()
+  const clipboard = useClipboard()
+  const shell = useShell()
+
   return (
     <main>
       <h1>Hello, Murasaki 🦋</h1>
@@ -25,9 +34,19 @@ export default function HomePage() {
         </button>
       </div>
 
-      <p className="hint">
-        Edit the file — the window reloads instantly.
-      </p>
+      <div className="actions">
+        <button onClick={() => notify({ title: 'Hello', body: `Count: ${count}` })}>
+          🔔 Notify
+        </button>
+        <button onClick={() => clipboard.write(`Count: ${count}`)}>
+          📋 Copy to clipboard
+        </button>
+        <button onClick={() => shell.openExternal('https://github.com/murasakijs/murasaki')}>
+          🔗 Open repo
+        </button>
+      </div>
+
+      <p className="hint">Edit this file — the window reloads instantly.</p>
 
       <nav className="links">
         <Link href="/about">About →</Link>
