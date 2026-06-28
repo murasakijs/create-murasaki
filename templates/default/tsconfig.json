@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
+    "jsxImportSource": "murasaki",
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
