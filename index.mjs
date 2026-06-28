@@ -7,6 +7,7 @@ import { existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createInterface } from 'node:readline/promises'
+import { spawnSync } from 'node:child_process'
 
 // ── ANSI truecolor (Oomurasaki palette) ────────────────────────────────
 const BRIGHT = '\x1b[38;2;168;85;247m'
@@ -106,6 +107,31 @@ function isValidPackageName(name) {
   return /^[a-z0-9][a-z0-9._-]*$/.test(name)
 }
 
+// ── Package manager detection ─────────────────────────────────────────
+function detectPackageManager() {
+  const ua = process.env.npm_config_user_agent || ''
+  if (ua.startsWith('pnpm')) return 'pnpm'
+  if (ua.startsWith('yarn')) return 'yarn'
+  if (ua.startsWith('bun'))  return 'bun'
+  return 'npm'
+}
+
+function installArgs(pm) {
+  // pnpm respects parent workspace by default; --ignore-workspace makes the
+  // new app's install self-contained even when scaffolded inside a workspace.
+  if (pm === 'pnpm') return ['install', '--ignore-workspace']
+  return ['install']
+}
+
+function runInstall(targetDir, pm) {
+  const result = spawnSync(pm, installArgs(pm), {
+    cwd: targetDir,
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  })
+  return result.status === 0
+}
+
 async function promptForName() {
   const rl = createInterface({ input: process.stdin, output: process.stdout })
   const answer = await rl.question(`  ${c(DEEP)}?${c(RESET)} ${c(BOLD)}Project name${c(RESET)} ${c(DIM)}(my-app):${c(RESET)} `)
@@ -143,12 +169,28 @@ async function scaffold(projectName) {
 
   log(`  ${c(GREEN)}${c(BOLD)}✓${c(RESET)} Created ${c(BOLD)}${projectName}/${c(RESET)}`)
 
+  // Install dependencies (Next.js-like behavior)
+  const pm = detectPackageManager()
+  const skip = process.argv.includes('--skip-install')
+
+  if (!skip) {
+    log(`  ${c(DIM)}○${c(RESET)} Installing dependencies with ${c(BOLD)}${pm}${c(RESET)}...\n`)
+    const installStart = Date.now()
+    const ok = runInstall(targetDir, pm)
+    const elapsed = ((Date.now() - installStart) / 1000).toFixed(1)
+    if (ok) {
+      log(`\n  ${c(GREEN)}${c(BOLD)}✓${c(RESET)} Dependencies installed ${c(DIM)}(${elapsed}s)${c(RESET)}`)
+    } else {
+      log(`\n  ${c(RED)}✗${c(RESET)} ${pm} install failed; run ${c(BOLD)}${pm} install${c(RESET)} manually inside ${c(BOLD)}${projectName}/${c(RESET)}`)
+    }
+  }
+
   // Next steps
+  const runner = pm === 'npm' ? 'npm run dev' : `${pm} dev`
   log(`
   ${c(DIM)}Next:${c(RESET)}
     ${c(BRIGHT)}cd${c(RESET)} ${projectName}
-    ${c(BRIGHT)}npm install${c(RESET)}     ${c(DIM)}# or pnpm install${c(RESET)}
-    ${c(BRIGHT)}npm run dev${c(RESET)}     ${c(DIM)}# starts the desktop window with HMR${c(RESET)}
+    ${c(BRIGHT)}${runner}${c(RESET)}     ${c(DIM)}# starts the desktop window with HMR${c(RESET)}
 
   ${c(DIM)}docs${c(RESET)}  ${c(DIM)}https://github.com/murasakijs/murasaki${c(RESET)}
 `)
