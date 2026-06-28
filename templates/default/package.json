@@ -7,6 +7,6 @@
     "dev": "murasaki dev"
   },
   "dependencies": {
-    "murasaki": "^0.1.0"
+    "murasaki": "^0.2.0"
   }
 }
