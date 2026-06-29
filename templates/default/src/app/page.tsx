@@ -1,14 +1,9 @@
 // src/app/page.tsx — the "/" route.
 //
-// Demonstrates the hooks shipped with murasaki/jsx/dom:
-//   useState        — client state
-//   useNotification — OS notification banner
-//   useClipboard    — system clipboard r/w
-//   useShell        — open URL in default browser
-//   useDialog + useFs — native file picker + filesystem
-//   useWindow       — window control (minimize, title, size, ...)
+// Uses Murasaki's own layout primitives (View / Row / Text) alongside
+// regular HTML. <TitleBar> gives the window a draggable header.
 
-import { Link } from 'murasaki'
+import { Link, Row, Stack, Text, TitleBar, View } from 'murasaki'
 import {
   useClipboard,
   useDialog,
@@ -39,50 +34,55 @@ export default function HomePage() {
   }
 
   return (
-    <main>
-      <h1>Hello, Murasaki 🦋</h1>
-      <p>
-        This view lives in <code>src/app/page.tsx</code>.
-      </p>
+    <View style={{ height: '100vh' }}>
+      <TitleBar>
+        <Text size={13} weight="medium">
+          My Murasaki App
+        </Text>
+      </TitleBar>
 
-      <div className="counter">
-        <button onClick={() => setCount(count - 1)} aria-label="decrement">
-          −
-        </button>
-        <strong>{count}</strong>
-        <button onClick={() => setCount(count + 1)} aria-label="increment">
-          +
-        </button>
-      </div>
+      <Stack grow gap={20} padding={40} align="center" justify="center">
+        <Text as="h1" size={64} weight="bold" style={{ margin: 0 }}>
+          Hello, Murasaki 🦋
+        </Text>
+        <Text color="#888">
+          Edit <code>src/app/page.tsx</code> — the window reloads instantly.
+        </Text>
 
-      <div className="actions">
-        <button onClick={() => notify({ title: 'Hello', body: `Count: ${count}` })}>
-          🔔 Notify
-        </button>
-        <button onClick={() => clipboard.write(`Count: ${count}`)}>📋 Copy</button>
-        <button onClick={pickFile}>📂 Pick file</button>
-        <button onClick={() => shell.openExternal('https://github.com/murasakijs/murasaki')}>
-          🔗 Repo
-        </button>
-      </div>
+        <Row gap={12} align="center">
+          <button onClick={() => setCount(count - 1)} aria-label="decrement">
+            −
+          </button>
+          <Text size={28} weight="bold" style={{ minWidth: '48px', textAlign: 'center' }}>
+            {count}
+          </Text>
+          <button onClick={() => setCount(count + 1)} aria-label="increment">
+            +
+          </button>
+        </Row>
 
-      <div className="actions">
-        <button onClick={() => win.minimize()}>🟡 Minimize</button>
-        <button onClick={() => win.toggleMaximize()}>🟢 Toggle max</button>
-        <button onClick={() => win.setTitle(`Murasaki — count ${count}`)}>
-          🪟 Title = count
-        </button>
-      </div>
+        <Row gap={8} wrap justify="center">
+          <button onClick={() => notify({ title: 'Hello', body: `Count: ${count}` })}>
+            🔔 Notify
+          </button>
+          <button onClick={() => clipboard.write(`Count: ${count}`)}>📋 Copy</button>
+          <button onClick={pickFile}>📂 Pick file</button>
+          <button onClick={() => win.toggleMaximize()}>🟢 Toggle max</button>
+          <button onClick={() => shell.openExternal('https://github.com/murasakijs/murasaki')}>
+            🔗 Repo
+          </button>
+        </Row>
 
-      {filePath && (
-        <p className="hint">
-          Last picked: <code>{filePath}</code>
-        </p>
-      )}
+        {filePath && (
+          <Text size={12} color="#888">
+            Last picked: <code>{filePath}</code>
+          </Text>
+        )}
 
-      <nav className="links">
-        <Link href="/about">About →</Link>
-      </nav>
-    </main>
+        <nav>
+          <Link href="/about">About →</Link>
+        </nav>
+      </Stack>
+    </View>
   )
 }
