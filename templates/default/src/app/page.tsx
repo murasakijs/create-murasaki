@@ -1,9 +1,7 @@
 // src/app/page.tsx — the "/" route.
-//
-// Uses Murasaki's own layout primitives (View / Row / Text) alongside
-// regular HTML. <TitleBar> gives the window a draggable header.
+// Mixes Murasaki components with plain HTML — both coexist.
 
-import { Link, Row, Stack, Text, TitleBar, View } from 'murasaki'
+import { Button, Card, Input, Link, Row, Stack, Text, TitleBar, View } from 'murasaki'
 import {
   useClipboard,
   useDialog,
@@ -16,6 +14,7 @@ import {
 
 export default function HomePage() {
   const [count, setCount] = useState(0)
+  const [name, setName] = useState('world')
   const [filePath, setFilePath] = useState('')
 
   const notify = useNotification()
@@ -41,36 +40,56 @@ export default function HomePage() {
         </Text>
       </TitleBar>
 
-      <Stack grow gap={20} padding={40} align="center" justify="center">
-        <Text as="h1" size={64} weight="bold" style={{ margin: 0 }}>
-          Hello, Murasaki 🦋
+      <Stack grow gap={24} padding={40} align="center" justify="center">
+        <Text as="h1" size={56} weight="bold" style={{ margin: 0 }}>
+          Hello, {name} 🦋
         </Text>
         <Text color="#888">
           Edit <code>src/app/page.tsx</code> — the window reloads instantly.
         </Text>
 
-        <Row gap={12} align="center">
-          <button onClick={() => setCount(count - 1)} aria-label="decrement">
-            −
-          </button>
-          <Text size={28} weight="bold" style={{ minWidth: '48px', textAlign: 'center' }}>
-            {count}
-          </Text>
-          <button onClick={() => setCount(count + 1)} aria-label="increment">
-            +
-          </button>
-        </Row>
+        <Card padding={20} style={{ minWidth: '360px' }}>
+          <Stack gap={12}>
+            <Stack gap={4}>
+              <Text size={12} weight="medium" color="#666">
+                Name
+              </Text>
+              <Input
+                value={name}
+                onInput={(e) => setName((e.target as HTMLInputElement).value)}
+              />
+            </Stack>
+            <Row gap={12} align="center" justify="center">
+              <Button variant="secondary" onClick={() => setCount(count - 1)}>
+                −
+              </Button>
+              <Text size={24} weight="bold" style={{ minWidth: '56px', textAlign: 'center' }}>
+                {count}
+              </Text>
+              <Button onClick={() => setCount(count + 1)}>+</Button>
+            </Row>
+          </Stack>
+        </Card>
 
         <Row gap={8} wrap justify="center">
-          <button onClick={() => notify({ title: 'Hello', body: `Count: ${count}` })}>
+          <Button onClick={() => notify({ title: 'Hello', body: `${name}, count = ${count}` })}>
             🔔 Notify
-          </button>
-          <button onClick={() => clipboard.write(`Count: ${count}`)}>📋 Copy</button>
-          <button onClick={pickFile}>📂 Pick file</button>
-          <button onClick={() => win.toggleMaximize()}>🟢 Toggle max</button>
-          <button onClick={() => shell.openExternal('https://github.com/murasakijs/murasaki')}>
+          </Button>
+          <Button variant="secondary" onClick={() => clipboard.write(name)}>
+            📋 Copy
+          </Button>
+          <Button variant="secondary" onClick={pickFile}>
+            📂 Pick file
+          </Button>
+          <Button variant="ghost" onClick={() => win.toggleMaximize()}>
+            🟢 Toggle max
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => shell.openExternal('https://github.com/murasakijs/murasaki')}
+          >
             🔗 Repo
-          </button>
+          </Button>
         </Row>
 
         {filePath && (
