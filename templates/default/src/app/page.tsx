@@ -15,7 +15,6 @@ import {
   TabPanel,
   Tabs,
   Text,
-  TitleBar,
   View,
 } from 'murasaki'
 import {
@@ -57,13 +56,7 @@ export default function HomePage() {
 
   return (
     <View style={{ height: '100vh' }}>
-      <TitleBar>
-        <Text size={13} weight="medium">
-          My Murasaki App
-        </Text>
-      </TitleBar>
-
-      <Stack grow gap={20} padding={32} align="center">
+      <Stack grow gap={20} padding={32} align="center" justify="center">
         <Stack gap={8} align="center">
           <Text as="h1" size={56} weight="bold" style={{ margin: 0 }}>
             Hello, {name} 🦋
