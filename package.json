@@ -1,6 +1,6 @@
 {
   "name": "create-murasaki",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Scaffolder for Murasaki apps. Run with `npm create murasaki@latest`.",
   "keywords": [
     "murasaki",
