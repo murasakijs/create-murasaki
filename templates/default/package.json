@@ -9,7 +9,7 @@
     "start": "node dist/server.cjs"
   },
   "dependencies": {
-    "murasaki": "^0.16.0"
+    "murasaki": "^0.17.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
