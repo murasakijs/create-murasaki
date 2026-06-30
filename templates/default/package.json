@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "murasaki dev"
+    "dev": "murasaki dev",
+    "build": "murasaki build",
+    "start": "node dist/server.js"
   },
   "dependencies": {
-    "murasaki": "^0.14.0"
+    "murasaki": "^0.15.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
