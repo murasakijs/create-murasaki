@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "murasaki dev",
     "build": "murasaki build",
-    "start": "node dist/server.js"
+    "start": "node dist/server.cjs"
   },
   "dependencies": {
-    "murasaki": "^0.15.0"
+    "murasaki": "^0.16.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
