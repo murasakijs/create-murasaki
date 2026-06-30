@@ -11,7 +11,7 @@
     "start": "node dist/server.cjs"
   },
   "dependencies": {
-    "murasaki": "^0.20.0"
+    "murasaki": "^0.21.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
