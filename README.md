@@ -1,69 +1,77 @@
 <div align="center">
 
-# create-murasaki
+<img src="./assets/logo.svg" alt="create-murasaki — scaffolder for Murasaki apps" width="720">
 
-Scaffolder for [Murasaki](https://github.com/murasakijs/murasaki) — the
+**Scaffolder for [Murasaki](https://github.com/murasakijs/murasaki)** — the
 Next.js-inspired desktop framework for TypeScript / Node.js.
 
 [![npm version](https://img.shields.io/npm/v/create-murasaki?color=A855F7&label=npm)](https://www.npmjs.com/package/create-murasaki)
+[![npm downloads](https://img.shields.io/npm/dm/create-murasaki?color=A855F7)](https://www.npmjs.com/package/create-murasaki)
+[![license](https://img.shields.io/npm/l/create-murasaki?color=A855F7)](./LICENSE)
+
+[English](./README.md) · [日本語](./README.ja.md)
 
 </div>
+
+---
 
 ## Usage
 
 ```bash
-pnpm create murasaki@latest        # interactive
-# or
+# interactive (project name + linter prompt)
+pnpm create murasaki@latest
+
+# non-interactive
 pnpm create murasaki@latest my-app --linter biome
-# or
-npm create murasaki@latest my-app
+npm  create murasaki@latest my-app --linter none
+yarn create murasaki       my-app --linter eslint
+bunx  create-murasaki      my-app
 ```
 
-You'll be asked:
+Then:
 
-- **Project name** (defaults to `my-app`)
-- **Linter** — `biome` (recommended) / `eslint` / `none`
-
-The CLI then:
-
-1. Copies the default template into `<project>/`
-2. Patches `package.json` with the chosen name
-3. (Optional) adds Biome or ESLint config + devDeps
-4. Runs `pnpm install` / `npm install` / `yarn install` (auto-detected from
-   the `npm_config_user_agent`). Pass `--skip-install` to opt out.
-5. Prints next steps: `cd <project> && pnpm dev`
+```bash
+cd my-app
+pnpm dev        # HMR-enabled dev window
+pnpm build      # dist/server.cjs
+pnpm bundle     # dist/<App>.app (or OS folder)
+pnpm installer  # dist/<App>-<ver>.dmg (or .msi / .AppImage / .zip)
+```
 
 ## What you get
 
 ```
 my-app/
-├── package.json          # pinned to murasaki ^0.x
-├── tsconfig.json         # jsxImportSource: "murasaki", strict, Bundler resolution
-├── biome.json            # (if biome chosen)
-└── src/
-    └── app/
-        ├── layout.tsx    # root layout, metadata, ThemeProvider
-        ├── page.tsx      # home — TitleBar + Tabs (Counter / Form / Native)
-        ├── about/
-        │   └── page.tsx  # /about route
-        └── globals.css   # global styles
+├── src/
+│   ├── app/
+│   │   ├── page.tsx        first route (/)
+│   │   ├── layout.tsx      root layout (metadata, ThemeProvider, ToastProvider)
+│   │   └── globals.css     theme tokens + resets
+│   └── ...
+├── murasaki.config.ts      typed build config (name, bundleId, icon, targets)
+├── package.json            with dev / build / bundle / installer scripts
+└── tsconfig.json
 ```
 
-Right after `pnpm dev` you get a working window with:
+## Options
 
-- a 3-tab home (Counter, Form, Native APIs) using **Murasaki components**
-- live **HMR** on file save (no flash)
-- **system theme** following (light / dark)
-- 9 **native hooks** ready to use (notification / clipboard / fs / dialog / shell / window)
+| Flag                      | Values                        | Default          |
+| ------------------------- | ----------------------------- | ---------------- |
+| `<project-name>`          | Any valid npm package name    | Prompted         |
+| `--linter <name>`         | `biome`, `eslint`, `none`     | Prompted (Biome recommended) |
 
-## Flags
+## Contributing
 
-| Flag | Effect |
-| --- | --- |
-| `<name>` (positional) | Project directory name. If omitted, prompts. |
-| `--linter biome\|eslint\|none` | Skip the linter prompt. |
-| `--skip-install` | Don't run install after copy. |
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Code of Conduct
+
+See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
+
+## Security
+
+See [SECURITY.md](./SECURITY.md).
 
 ## License
 
-MIT
+MIT © ichi — see [LICENSE](./LICENSE).

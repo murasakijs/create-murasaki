@@ -27,7 +27,12 @@
   "files": [
     "index.mjs",
     "templates",
+    "assets",
     "README.md",
+    "README.ja.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "dependencies": {
